@@ -1,0 +1,38 @@
+import openai
+import PyPDF2
+import requests
+
+# Set your OpenAI API key here
+openai.api_key = "YOUR_OPENAI_API_KEY"
+
+def extract_text_from_pdf(pdf_path):
+    with open(pdf_path, "rb") as pdf_file:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        text = "\n".join(page.extract_text() for page in pdf_reader.pages)
+    return text
+
+def ask_question(question, context):
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=f"Q: {question}\nA:",
+        max_tokens=50,
+        context=context,
+    )
+    return response.choices[0].text.strip()
+
+def main():
+    pdf_path = input("Enter the path to the PDF file: ")
+    pdf_text = extract_text_from_pdf(pdf_path)
+    
+    context = pdf_text  # Use the entire PDF text as context
+    
+    while True:
+        question = input("Ask a question (or type 'exit' to quit): ")
+        if question.lower() == "exit":
+            break
+        
+        answer = ask_question(question, context)
+        print("Answer:", answer)
+
+if __name__ == "__main__":
+    main()
